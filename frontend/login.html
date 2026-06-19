@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login | SOC Assistant</title>
+    <!-- Bootstrap & Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css" rel="stylesheet">
+    <!-- Firebase Modular SDK (unchanged) -->
+    <script type="importmap">
+        {
+            "imports": {
+                "firebase/app": "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js",
+                "firebase/auth": "https://www.gstatic.com/firebasejs/12.11.0/firebase-auth.js",
+                "firebase/database": "https://www.gstatic.com/firebasejs/12.11.0/firebase-database.js"
+            }
+        }
+    </script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+            background: #030614;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* SPLIT SCREEN LAYOUT */
+        .split-container {
+            display: flex;
+            min-height: 100vh;
+            width: 100%;
+        }
+        .form-side {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            background: rgba(10, 15, 31, 0.65);
+            backdrop-filter: blur(6px);
+            z-index: 2;
+        }
+        .visual-side {
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+            background: #01050c;
+        }
+
+        /* FORM CARD – all fields visible, no clipping */
+        .glass-card {
+            width: 100%;
+            max-width: 480px;
+            background: rgba(15, 25, 45, 0.8);
+            backdrop-filter: blur(16px);
+            border-radius: 32px;
+            padding: 2rem;
+            border: 1px solid rgba(72, 187, 120, 0.4);
+            box-shadow: 0 25px 45px -12px rgba(0,0,0,0.5), 0 0 15px rgba(72, 187, 120, 0.15);
+            transition: transform 0.3s ease;
+        }
+        .glass-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 30px 50px -12px rgba(0,0,0,0.6), 0 0 20px rgba(72, 187, 120, 0.25);
+        }
+
+        /* Typography */
+        .title {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        .title i {
+            font-size: 3rem;
+            color: #48bb78;
+            filter: drop-shadow(0 0 8px #48bb78);
+        }
+        .title h2 {
+            font-size: 2rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #e2e8f0, #48bb78);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            margin-top: 0.5rem;
+        }
+        .title p {
+            color: #a0aec0;
+            font-size: 0.9rem;
+            letter-spacing: 0.5px;
+        }
+
+        /* Form elements */
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #cbd5e0;
+            font-weight: 500;
+            font-size: 0.85rem;
+            letter-spacing: 0.5px;
+        }
+        .form-control {
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid #2d3748;
+            color: #e2e8f0;
+            border-radius: 14px;
+            padding: 0.75rem 1rem;
+            transition: all 0.2s;
+        }
+        .form-control:focus {
+            background: rgba(0, 0, 0, 0.6);
+            border-color: #48bb78;
+            box-shadow: 0 0 0 3px rgba(72, 187, 120, 0.2);
+            color: white;
+        }
+
+        /* Buttons */
+        .btn-primary {
+            background: linear-gradient(135deg, #2b6e46, #1a4730);
+            border: none;
+            border-radius: 40px;
+            padding: 0.75rem;
+            font-weight: 600;
+            width: 100%;
+            transition: all 0.2s;
+            letter-spacing: 0.5px;
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            background: linear-gradient(135deg, #3c9b5e, #266b40);
+            box-shadow: 0 8px 20px rgba(72, 187, 120, 0.3);
+        }
+        .switch-link {
+            text-align: center;
+            margin-top: 1.5rem;
+            color: #a0aec0;
+            font-size: 0.9rem;
+        }
+        .switch-link a {
+            color: #48bb78;
+            text-decoration: none;
+            font-weight: 600;
+        }
+        .switch-link a:hover {
+            text-decoration: underline;
+        }
+        .divider {
+            display: flex;
+            align-items: center;
+            text-align: center;
+            color: #718096;
+            font-size: 0.8rem;
+            margin: 1.5rem 0;
+        }
+        .divider::before,
+        .divider::after {
+            content: '';
+            flex: 1;
+            border-bottom: 1px solid #2d3748;
+        }
+        .divider span {
+            margin: 0 1rem;
+        }
+        .alert {
+            border-radius: 14px;
+            margin-bottom: 1.5rem;
+            display: none;
+            background: rgba(0,0,0,0.6);
+            border-left: 4px solid #48bb78;
+            color: #cbd5e0;
+        }
+
+        /* ===== RIGHT SIDE – DIGITAL RAIN + HACKER EFFECT ===== */
+        #matrixCanvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0.5;
+            z-index: 1;
+        }
+        .binary-particle {
+            position: absolute;
+            color: #48bb78;
+            font-size: 12px;
+            font-family: monospace;
+            pointer-events: none;
+            z-index: 2;
+            animation: fall linear forwards;
+            text-shadow: 0 0 2px #48bb78;
+        }
+        @keyframes fall {
+            0% { transform: translateY(-10vh) rotate(0deg); opacity: 0.8; }
+            100% { transform: translateY(100vh) rotate(360deg); opacity: 0; }
+        }
+        /* Subtle grid overlay */
+        .grid-overlay {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                linear-gradient(rgba(72,187,120,0.1) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(72,187,120,0.1) 1px, transparent 1px);
+            background-size: 40px 40px;
+            z-index: 3;
+            pointer-events: none;
+        }
+        /* Glowing line scanner (smooth) */
+        .scan-line {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #48bb78, #48bb78, transparent);
+            opacity: 0.6;
+            animation: scanMove 6s linear infinite;
+            z-index: 4;
+            pointer-events: none;
+        }
+        @keyframes scanMove {
+            0% { transform: translateY(-100%); }
+            100% { transform: translateY(100vh); }
+        }
+
+        /* Responsive: stack on small screens */
+        @media (max-width: 768px) {
+            .split-container {
+                flex-direction: column;
+            }
+            .visual-side {
+                min-height: 200px;
+            }
+            .glass-card {
+                max-width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="split-container">
+        <!-- LEFT: FORM SIDE -->
+        <div class="form-side">
+            <div class="glass-card">
+                <div class="title">
+                    <i class="bi bi-shield-shaded"></i>
+                    <h2>SOC Assistant</h2>
+                    <p>>_ secure your network, empower your analysts</p>
+                </div>
+                <div id="alertMessage" class="alert" role="alert"></div>
+
+                <!-- Login Form -->
+                <div id="loginForm">
+                    <div class="form-group">
+                        <label>Email address</label>
+                        <input type="email" id="loginEmail" class="form-control" placeholder="Enter your email">
+                    </div>
+                    <div class="form-group">
+                        <label>Password</label>
+                        <input type="password" id="loginPassword" class="form-control" placeholder="Enter password">
+                    </div>
+                    <button class="btn btn-primary" onclick="loginWithEmail()">Login</button>
+                    <div class="divider"><span>or</span></div>
+                    <div class="switch-link">
+                        Don't have an account? <a href="#" onclick="showRegister()">Register now</a>
+                    </div>
+                </div>
+
+                <!-- Register Form (hidden initially) -->
+                <div id="registerForm" style="display: none;">
+                    <div class="form-group">
+                        <label>Full Name</label>
+                        <input type="text" id="regFullName" class="form-control" placeholder="Your full name">
+                    </div>
+                    <div class="form-group">
+                        <label>Email address</label>
+                        <input type="email" id="regEmail" class="form-control" placeholder="Enter your email">
+                    </div>
+                    <div class="form-group">
+                        <label>Username</label>
+                        <input type="text" id="regUsername" class="form-control" placeholder="Choose a username">
+                    </div>
+                    <div class="form-group">
+                        <label>Phone</label>
+                        <input type="tel" id="regPhone" class="form-control" placeholder="+1234567890">
+                    </div>
+                    <div class="form-group">
+                        <label>Password</label>
+                        <input type="password" id="regPassword" class="form-control" placeholder="Create a password">
+                    </div>
+                    <div class="form-group">
+                        <label>Confirm Password</label>
+                        <input type="password" id="regConfirmPassword" class="form-control" placeholder="Confirm password">
+                    </div>
+                    <button class="btn btn-primary" onclick="registerWithEmail()">Register</button>
+                    <div class="switch-link">
+                        Already have an account? <a href="#" onclick="showLogin()">Login here</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- RIGHT: VISUAL SIDE with hacker effects -->
+        <div class="visual-side">
+            <canvas id="matrixCanvas"></canvas>
+            <div class="grid-overlay"></div>
+            <div class="scan-line"></div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "firebase/app";
+        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendEmailVerification, fetchSignInMethodsForEmail, sendPasswordResetEmail, onAuthStateChanged, signOut as authSignOut } from "firebase/auth";
+        import { getDatabase, ref, set, get, child } from "firebase/database";
+
+        // Firebase configuration (your provided config)
+        const firebaseConfig = {
+            apiKey: "AIzaSyD4Nhmq0DlMnIuG6oWOfoTAnUeWN37Ym74",
+            authDomain: "newapp-f2106.firebaseapp.com",
+            projectId: "newapp-f2106",
+            storageBucket: "newapp-f2106.appspot.com",
+            messagingSenderId: "372249829739",
+            appId: "1:372249829739:web:98d193f53370ef52002c2e",
+            measurementId: "G-QXF0B0VMGN",
+            databaseURL: "https://newapp-f2106-default-rtdb.firebaseio.com"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getDatabase(app);
+
+        // Helper functions
+        function showAlert(message, type = 'danger') {
+            const alertDiv = document.getElementById('alertMessage');
+            alertDiv.className = `alert alert-${type}`;
+            alertDiv.innerHTML = message;
+            alertDiv.style.display = 'block';
+            setTimeout(() => alertDiv.style.display = 'none', 5000);
+        }
+
+        // Hash password using SHA-256
+        async function hashPassword(password) {
+            const enc = new TextEncoder();
+            const data = enc.encode(password);
+            const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+            const hashArray = Array.from(new Uint8Array(hashBuffer));
+            return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+        }
+
+        window.showLogin = () => {
+            document.getElementById('loginForm').style.display = 'block';
+            document.getElementById('registerForm').style.display = 'none';
+        };
+        window.showRegister = () => {
+            document.getElementById('loginForm').style.display = 'none';
+            document.getElementById('registerForm').style.display = 'block';
+        };
+
+        // Register with email/password
+        window.registerWithEmail = async () => {
+            const fullName = document.getElementById('regFullName').value.trim();
+            const email = document.getElementById('regEmail').value.trim();
+            const username = document.getElementById('regUsername').value.trim();
+            const phone = document.getElementById('regPhone').value.trim();
+            const password = document.getElementById('regPassword').value;
+            const confirm = document.getElementById('regConfirmPassword').value;
+
+            if (!fullName || !email || !username || !password || !confirm) {
+                showAlert('All fields are required', 'warning');
+                return;
+            }
+            if (password !== confirm) {
+                showAlert('Passwords do not match', 'warning');
+                return;
+            }
+            if (password.length < 6) {
+                showAlert('Password must be at least 6 characters', 'warning');
+                return;
+            }
+
+            try {
+                const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+                const user = userCredential.user;
+
+                await sendEmailVerification(user);
+
+                const pwdHash = await hashPassword(password);
+                await set(ref(db, `pendingUsers/${user.uid}`), {
+                    fullName: fullName,
+                    email: email,
+                    username: username,
+                    phone: phone || null,
+                    passwordHash: pwdHash,
+                    createdAt: new Date().toISOString()
+                });
+
+                await authSignOut(auth);
+
+                showAlert('Registration successful! A verification email was sent. Verify email then login.', 'success');
+                showLogin();
+                // Clear register fields
+                document.getElementById('regFullName').value = '';
+                document.getElementById('regEmail').value = '';
+                document.getElementById('regUsername').value = '';
+                document.getElementById('regPhone').value = '';
+                document.getElementById('regPassword').value = '';
+                document.getElementById('regConfirmPassword').value = '';
+            } catch (error) {
+                console.error(error);
+                showAlert(error.message, 'danger');
+            }
+        };
+
+        // Login with email/password
+        window.loginWithEmail = async () => {
+            const email = document.getElementById('loginEmail').value.trim();
+            const password = document.getElementById('loginPassword').value;
+
+            if (!email || !password) {
+                showAlert('Email and password are required', 'warning');
+                return;
+            }
+
+            try {
+                const userCredential = await signInWithEmailAndPassword(auth, email, password);
+                const user = userCredential.user;
+
+                if (!user.emailVerified) {
+                    await authSignOut(auth);
+                    showAlert('Please verify your email before logging in. Check your inbox.', 'warning');
+                    return;
+                }
+
+                // Move from pendingUsers to users if needed
+                try {
+                    const userSnap = await get(ref(db, `users/${user.uid}`));
+                    if (!userSnap.exists()) {
+                        const pendingSnap = await get(ref(db, `pendingUsers/${user.uid}`));
+                        if (pendingSnap.exists()) {
+                            const data = pendingSnap.val();
+                            await set(ref(db, `users/${user.uid}`), {
+                                ...data,
+                                verifiedAt: new Date().toISOString()
+                            });
+                            await set(ref(db, `pendingUsers/${user.uid}`), null);
+                        }
+                    }
+                } catch (e) {
+                    console.error('DB move error', e);
+                }
+
+                window.location.href = 'dashboard.html';
+            } catch (error) {
+                console.error('Sign-in error:', error);
+                const code = error?.code || 'unknown_error';
+                const msg = error?.message || String(error);
+                showAlert(`Error (${code}): ${msg}`, 'danger');
+            }
+        };
+
+        // Auto-redirect if already logged in
+        onAuthStateChanged(auth, (user) => {
+            if (user && user.emailVerified && !window.location.href.includes('dashboard.html')) {
+                window.location.href = 'dashboard.html';
+            }
+        });
+
+        // ========== DIGITAL RAIN (Matrix effect) on right canvas ==========
+        const canvas = document.getElementById('matrixCanvas');
+        const ctx = canvas.getContext('2d');
+
+        function resizeCanvas() {
+            const container = canvas.parentElement;
+            canvas.width = container.clientWidth;
+            canvas.height = container.clientHeight;
+        }
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+
+        const chars = "01アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン";
+        const charArray = chars.split('');
+        const fontSize = 16;
+        let columns, drops;
+
+        function initRain() {
+            columns = Math.floor(canvas.width / fontSize);
+            drops = Array(columns).fill(1);
+        }
+
+        function drawRain() {
+            ctx.fillStyle = 'rgba(1, 5, 12, 0.05)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = '#48bb78';
+            ctx.font = `${fontSize}px monospace`;
+
+            for (let i = 0; i < drops.length; i++) {
+                const text = charArray[Math.floor(Math.random() * charArray.length)];
+                ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+                if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) {
+                    drops[i] = 0;
+                }
+                drops[i]++;
+            }
+            requestAnimationFrame(drawRain);
+        }
+
+        // Wait for canvas to have width
+        if (canvas.width > 0) {
+            initRain();
+            drawRain();
+        } else {
+            const observer = new ResizeObserver(() => {
+                if (canvas.width > 0) {
+                    initRain();
+                    drawRain();
+                    observer.disconnect();
+                }
+            });
+            observer.observe(canvas.parentElement);
+        }
+
+        // Floating binary particles
+        function createFloatingBinary() {
+            const particle = document.createElement('div');
+            particle.className = 'binary-particle';
+            particle.innerHTML = Math.random() > 0.5 ? '1' : '0';
+            particle.style.left = Math.random() * window.innerWidth + 'px';
+            particle.style.animationDuration = 4 + Math.random() * 4 + 's';
+            document.querySelector('.visual-side').appendChild(particle);
+            setTimeout(() => particle.remove(), 8000);
+        }
+        setInterval(createFloatingBinary, 250);
+    </script>
+</body>
+</html>

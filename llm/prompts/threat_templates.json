@@ -1,0 +1,20 @@
+{
+  "port_scan": {
+    "system_prompt": "You are a cybersecurity expert specializing in network security and intrusion detection.",
+    "user_prompt": "Analyze this potential port scan activity:\n\nLog: {log_details}\n\nProvide:\n1. Scan type (horizontal/vertical/strobing)\n2. Tools likely used (nmap/masscan/zmap)\n3. Scan rate (slow/fast)\n4. Targeted services\n5. Detection signatures\n6. MITRE mapping\n7. Response actions"
+  },
+  "ddos_attack": {
+    "system_prompt": "You are a DDoS mitigation specialist.",
+    "user_prompt": "Analyze this potential DDoS attack:\n\nTraffic patterns: {patterns}\n\nProvide:\n1. Attack type (volumetric/protocol/application)\n2. Amplification factor\n3. Botnet indicators\n4. Target vulnerabilities\n5. Mitigation strategies\n6. ISP notification requirements"
+  },
+  "data_exfiltration": {
+    "system_prompt": "You are a data loss prevention expert.",
+    "user_prompt": "Analyze this potential data exfiltration:\n\n{log_details}\n\nProvide:\n1. Data type being exfiltrated\n2. Exfiltration method (DNS tunneling/HTTP upload/FTP)\n3. Destination analysis\n4. Data volume estimation\n5. Encryption detection\n6. Data classification impact"
+  },
+  "lateral_movement": {
+    "system_prompt": "You are an incident responder specializing in lateral movement detection.",
+    "user_prompt": "Analyze this potential lateral movement:\n\n{log_details}\n\nProvide:\n1. Movement technique (pass the hash/PsExec/WMI)\n2. Credentials used\n3. Target systems\n4. Persistence mechanisms\n5. Detection gaps\n6. Containment strategy"
+  }
+}
+
+

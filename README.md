@@ -58,7 +58,7 @@ AI_POWERED_SOC_ASSISTANT/
 ## ⚙️ Setup & Installation
 
 # Clone repository
-git clone https://github.com/your-username/AI-Powered-SOC-Assistant.git
+git clone https://github.com/venkatsaikrishna369/AI-Powered-SOC-Assistant.git
 
 # Navigate into project
 cd AI-Powered-SOC-Assistant

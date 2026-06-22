@@ -30,27 +30,14 @@ This project is built to demonstrate practical skills in:
 
 ## 🧠 Tech Stack
 
-- Python 3.x
-- Scikit-learn / ML libraries
+- Python 
+- Scikit-learn
+-  ML libraries
 - Pandas, NumPy
 - OpenAI API (for AI assistance)
-- Flask / FastAPI (if used in backend)
-- Matplotlib / Plotly (for visualization)
+- FastAPI 
+- Matplotlib (for visualization)
 - Git & GitHub for version control
-
----
-
-## 📁 Project Structure
-AI_POWERED_SOC_ASSISTANT/
-│
-├── config/ # Configuration files
-├── data/ # Raw and processed datasets
-├── ml/ # Machine learning models
-├── notebooks/ # Experiments / analysis
-├── src/ # Core application code
-├── utils/ # Helper functions
-├── main.py # Entry point
-└── README.md
 
 
 ---

@@ -45,7 +45,7 @@ This project is built to demonstrate practical skills in:
 ## ⚙️ Setup & Installation
 
 # Clone repository
-git clone https://github.com/venkatsaikrishna369/AI-Powered-SOC-Assistant.git
+
 git clone https://github.com/Aravind-2022/AI-Powered-SOC-Assistant.git
 
 # Navigate into project
